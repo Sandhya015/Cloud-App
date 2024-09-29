@@ -1,43 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// src/App.js
 
-function App() {
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import TaskForm from './components/TaskForm';
+import TaskList from './components/TaskList';
+
+const App = () => {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
+
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/tasks');
+      setTasks(response.data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
 
   useEffect(() => {
-    axios.get('http://localhost:5000/tasks')
-      .then(res => setTasks(res.data))
-      .catch(err => console.log(err));
+    fetchTasks(); // Fetch tasks on component mount
   }, []);
 
-  const addTask = () => {
-    axios.post('http://localhost:5000/tasks', { title: newTask })
-      .then(res => setTasks([...tasks, res.data]))
-      .catch(err => console.log(err));
-    setNewTask('');
-  };
-
-  const deleteTask = (id) => {
-    axios.delete(`http://localhost:5000/tasks/${id}`)
-      .then(() => setTasks(tasks.filter(task => task._id !== id)))
-      .catch(err => console.log(err));
-  };
-
   return (
-    <div>
-      <h1>To-Do List</h1>
-      <input value={newTask} onChange={e => setNewTask(e.target.value)} />
-      <button onClick={addTask}>Add Task</button>
-      <ul>
-        {tasks.map(task => (
-          <li key={task._id}>
-            {task.title} <button onClick={() => deleteTask(task._id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+    <div style={appStyle}>
+      <h1>Todo App</h1>
+      <TaskForm fetchTasks={fetchTasks} />
+      <TaskList tasks={tasks} fetchTasks={fetchTasks} />
     </div>
   );
-}
+};
+
+// Basic styles for the app
+const appStyle = {
+  maxWidth: '600px',
+  margin: '0 auto',
+  padding: '20px',
+  borderRadius: '5px',
+  boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+  backgroundColor: '#f9f9f9',
+};
 
 export default App;
